@@ -3,7 +3,10 @@ FROM alpine:3.5
 # Install OpenSSH server and Gitolite
 # Unlock the automatically-created git user
 RUN set -x \
- && apk add --update gitolite openssh \
+ && apk add --update \
+    gitolite \
+    openssh \
+    dumb-init \
  && rm -rf /var/cache/apk/* \
  && passwd -u git
 
@@ -15,10 +18,10 @@ VOLUME /var/lib/git
 
 # Entrypoint responsible for SSH host keys generation, and Gitolite data initialization
 COPY docker-entrypoint.sh /
-ENTRYPOINT ["/docker-entrypoint.sh"]
+ENTRYPOINT ["dumb-init"]
 
 # Expose port 22 to access SSH
 EXPOSE 22
 
 # Default command is to run the SSH server
-CMD ["sshd"]
+CMD ["/docker-entrypoint.sh", "sshd"]
